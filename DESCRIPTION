@@ -1,0 +1,22 @@
+Package: signal
+Type: Package
+Title: What the Package Does (Title Case)
+Version: 0.0.1
+Authors@R: c(
+  person("Spencer", "Nystrom", 
+    email = "nystromdev@gmail.com", 
+    role = c("aut", "cre", "cph"),
+    comment = c(ORCID = "0000-0003-1000-1579")),
+  person("Matthew", "Niederhuber", 
+    email = "", 
+    role = c("aut", "cph"),
+    comment = c(ORCID = ""))
+    )
+Description: More about what it does (maybe more than one line)
+    Use four spaces when indenting paragraphs within the Description.
+License: MIT + file LICENSE
+Encoding: UTF-8
+VignetteBuilder: knitr
+URL: https://github.com/snystrom/didactic-potato
+BugReports: https://github.com/snystrom/didactic-potato/issues
+Config/testthat/edition: 3
