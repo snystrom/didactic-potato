@@ -41,8 +41,9 @@ get_bw_matrix.BigWigFileList <- function(bw, regions,
 #' @importFrom rtracklayer summary
 get_bw_matrix.BigWigFile <- function(bw, regions,
                           type = c("mean", "min", "max", "coverage", "sd")){
+  
   type <- match.arg(type, choices = c("mean", "min", "max", "coverage", "sd"))
-
+                           
   # TODO: expect input is a BigWigFile,
   # need to coerce path to this before passing
   #bw <- rtracklayer::BigWigFile(path)
@@ -52,6 +53,13 @@ get_bw_matrix.BigWigFile <- function(bw, regions,
     stop("All regions must be equal width", call. = FALSE)
   }
 
+##this is probably redundant with the bad_seqnames check below
+  #error check that bw and regions have usable seqname styles - maybe unecessary? 
+  check_style(regions, bw)
+  
+  #match seqlevelsStyle between input objects -- this should work as long as seqnames match a standard style 
+  seqlevelsStyle(regions) <- seqlevelsStyle(bw)
+  
   # not 100% sure how the seqlevels thing works, need to do some reality
   # checking that no errors introduced here: WRITE TESTS!! (but for what?)
 
