@@ -84,4 +84,4 @@ get_bw_matrix.BigWigFile <- function(bw, regions,
 }
 
 
-}
+
