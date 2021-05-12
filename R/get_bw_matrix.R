@@ -56,24 +56,27 @@ get_bw_matrix.BigWigFile <- function(bw, regions,
 #this is simpler than running tryCatch()
 #TO DO -- make error message specific to which range has the issue 
   #error check that bw and regions have usable seqname styles - maybe unecessary? 
-  lapply(c(seqlevelsStyle(regions),seqlevelsStyle(bw)), function(x) if(!x %in% c("Ensembl","NCBI","UCSC")) {
-    stop("One of the input ranges uses seqlevelsStyles not supported by Seqname.\nSee genomeStyles() for supported species/styles."))
-  }) 
+  #lapply(c(seqlevelsStyle(regions),seqlevelsStyle(bw)), function(x) if(!x %in% c("Ensembl","NCBI","UCSC")) {
+  #  stop("One of the input ranges uses seqlevelsStyles not supported by Seqname.\nSee genomeStyles() for supported species/styles."))
+  #}) 
+  
+  check_regions_bigwig_seqlevels(regions,bw) 
   
   #match seqlevelsStyle between input objects -- this should work as long as seqnames match a standard style 
-  seqlevelsStyle(regions) <- seqlevelsStyle(bw)
+  #seqlevelsStyle(regions) <- seqlevelsStyle(bw)
   
+
+## FOR REVIEW TO DROP ##
   # not 100% sure how the seqlevels thing works, need to do some reality
   # checking that no errors introduced here: WRITE TESTS!! (but for what?)
+#  regions_seqs <- seqnames(seqinfo(regions))
+#  bw_seqs <- seqnames(seqinfo(bw))
 
-  regions_seqs <- seqnames(seqinfo(regions))
-  bw_seqs <- seqnames(seqinfo(bw))
-
-  if (!all(regions_seqs %in% bw_seqs)) {
-    bad_seqnames <- regions_seqs[!(regions_seqs %in% bw_seqs)]
-    stop(paste0("Some input regions do not match chromosomes found in the bigwig file.\nThe following seqnames are not found: ",
-                bad_seqnames), call. = FALSE)
-  }
+#  if (!all(regions_seqs %in% bw_seqs)) {
+#    bad_seqnames <- regions_seqs[!(regions_seqs %in% bw_seqs)]
+#    stop(paste0("Some input regions do not match chromosomes found in the bigwig file.\nThe following seqnames are not found: ",
+#                bad_seqnames), call. = FALSE)
+#  }
 
   seqlevels(regions) <- seqlevels(bw)
   seqinfo(regions) <- seqinfo(bw)
