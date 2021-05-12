@@ -53,6 +53,7 @@ get_bw_matrix.BigWigFile <- function(bw, regions,
     stop("All regions must be equal width", call. = FALSE)
   }
 
+  ##TO DO -- fully test with different invalid conditions
   check_regions_bigwig_seqlevels(regions,bw) 
   
 
