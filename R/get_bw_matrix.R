@@ -53,17 +53,7 @@ get_bw_matrix.BigWigFile <- function(bw, regions,
     stop("All regions must be equal width", call. = FALSE)
   }
 
-#this is simpler than running tryCatch()
-#TO DO -- make error message specific to which range has the issue 
-  #error check that bw and regions have usable seqname styles - maybe unecessary? 
-  #lapply(c(seqlevelsStyle(regions),seqlevelsStyle(bw)), function(x) if(!x %in% c("Ensembl","NCBI","UCSC")) {
-  #  stop("One of the input ranges uses seqlevelsStyles not supported by Seqname.\nSee genomeStyles() for supported species/styles."))
-  #}) 
-  
   check_regions_bigwig_seqlevels(regions,bw) 
-  
-  #match seqlevelsStyle between input objects -- this should work as long as seqnames match a standard style 
-  #seqlevelsStyle(regions) <- seqlevelsStyle(bw)
   
 
 ## FOR REVIEW TO DROP ##
@@ -78,6 +68,7 @@ get_bw_matrix.BigWigFile <- function(bw, regions,
 #                bad_seqnames), call. = FALSE)
 #  }
 
+  #match seqlevels between inputs 
   seqlevels(regions) <- seqlevels(bw)
   seqinfo(regions) <- seqinfo(bw)
 
