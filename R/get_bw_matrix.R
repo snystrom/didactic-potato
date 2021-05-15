@@ -9,14 +9,16 @@
 #'
 #' @examples
 get_bw_matrix <- function(bw, regions,
-                          type = c("mean", "min", "max", "coverage", "sd")){
+                          type = c("mean", "min", "max", "coverage", "sd"),
+                          by = NULL){
   UseMethod("get_bw_matrix")
 }
 
 #' @noRd
 #' @export
 get_bw_matrix.character <- function(bw, regions,
-                          type = c("mean", "min", "max", "coverage", "sd")){
+                          type = c("mean", "min", "max", "coverage", "sd"),
+                          by = NULL){
   get_bw_matrix.BigWigFile(rtracklayer::BigWigFile(bw),
                            regions, type)
 
@@ -25,7 +27,8 @@ get_bw_matrix.character <- function(bw, regions,
 #' @noRd
 #' @export
 get_bw_matrix.BigWigFileList <- function(bw, regions,
-                          type = c("mean", "min", "max", "coverage", "sd")){
+                          type = c("mean", "min", "max", "coverage", "sd"),
+                          by = NULL){
   lapply(bw, get_bw_matrix, regions, type)
   # TODO: consider 3d matrix output:
   # simplify2array()
@@ -40,7 +43,8 @@ get_bw_matrix.BigWigFileList <- function(bw, regions,
 #' @importFrom GenomeInfoDb seqlevels seqlevels<-
 #' @importFrom rtracklayer summary
 get_bw_matrix.BigWigFile <- function(bw, regions,
-                          type = c("mean", "min", "max", "coverage", "sd")){
+                          type = c("mean", "min", "max", "coverage", "sd"),
+                          by = NULL){
   
   type <- match.arg(type, choices = c("mean", "min", "max", "coverage", "sd"))
                            
@@ -75,8 +79,17 @@ get_bw_matrix.BigWigFile <- function(bw, regions,
 
   # suppress warnings because of out of bounds?
   # Nah, probably just let it bubble up
-  matrix <- rtracklayer::summary(bw, which = regions, as = "matrix",
-                                 type = type, size = size)
+  if(!is.null(by)){
+    regions.grp <- regions %>% split(., mcols(.)[,by])
+    matrix <- lapply(regions.grp, function(x){
+      rtracklayer::summary(bw, which = x, as = "matrix",
+                           type = type, size = size)
+    })
+  }else{
+    matrix <- rtracklayer::summary(bw, which = regions, as = "matrix",
+                                  type = type, size = size)   
+  }
+ 
 
   matrix
 }
