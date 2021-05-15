@@ -30,12 +30,12 @@ get_average_signal <- function(bw, regions, by = NULL) {
     return(signal.df) 
     
   }else{
-    matrix.df <- get_bw_matrix(bw, regions) %>% data.frame()
-    
-    colnames(matrix.df) <- (-(ncol(matrix.df)-1)/2):((ncol(matrix.df)-1)/2)
+    matrix <- get_bw_matrix(bw, regions) 
     
     signal.df <- matrix.df %>% 
-      reshape2::melt(variable.name = "position", value.name = "value") %>%
+      data.frame() %>%
+      setNames(1:size) %>%
+      reshape2::melt(variable.name = "position") %>%
       dplyr::mutate(position = as.double(position)) %>%
       dplyr::group_by(position) %>%
       dplyr::summarise(value.mean = mean(value, na.rm = T))
