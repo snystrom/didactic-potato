@@ -32,7 +32,7 @@ get_average_signal <- function(bw, regions, by = NULL) {
   }else{
     matrix <- get_bw_matrix(bw, regions) 
     
-    signal.df <- matrix.df %>% 
+    signal.df <- matrix %>% 
       data.frame() %>%
       setNames(1:size) %>%
       reshape2::melt(variable.name = "position") %>%
