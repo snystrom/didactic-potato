@@ -4,7 +4,12 @@
 \alias{get_bw_matrix}
 \title{Get signal matrix for regions using bigwig input}
 \usage{
-get_bw_matrix(bw, regions, type = c("mean", "min", "max", "coverage", "sd"))
+get_bw_matrix(
+  bw,
+  regions,
+  type = c("mean", "min", "max", "coverage", "sd"),
+  by = NULL
+)
 }
 \arguments{
 \item{bw}{an [rtracklayer::BigWigFile], [rtracklayer::BigWigFileList] or path to bigwig file}
@@ -14,7 +19,7 @@ get_bw_matrix(bw, regions, type = c("mean", "min", "max", "coverage", "sd"))
 \item{type}{one of: c("mean", "min", "max", "coverage", "sd")}
 }
 \value{
-a matrix of bigwig signal
+a matrix of bigwig signal.
 }
 \description{
 Get signal matrix for regions using bigwig input

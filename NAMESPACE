@@ -3,6 +3,7 @@
 S3method(get_bw_matrix,BigWigFile)
 S3method(get_bw_matrix,BigWigFileList)
 S3method(get_bw_matrix,character)
+export(get_average_signal)
 export(get_bw_matrix)
 import(GenomicRanges)
 importFrom(GenomeInfoDb,"seqlevels<-")
