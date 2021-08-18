@@ -1,0 +1,301 @@
+
+```{r setup}
+library(ggplot2)
+library(magrittr)
+#library(GenomicRanges)
+library(GenomicRanges)
+source('~/NystLib/R/peakUtils.R')
+```
+
+
+```{r test_data}
+load('~/McKay/CtBP_CnR/ctbp_cnr_analysis/analysis/R_out/ctbp_Sheet.rda')
+
+bw_path <- '/Users/m/McKay/FAIRE_dm6/BigWig/wt_3LW_dm6_trim_q5_sorted_dupsRemoved_POOLED_rpgcNorm_zNorm.bw'
+
+bw_list <- c('/Users/m/McKay/FAIRE_dm6/BigWig/wt_3LW_dm6_trim_q5_sorted_dupsRemoved_POOLED_rpgcNorm_zNorm.bw',
+             '/Users/m/McKay/FAIRE_dm6/BigWig/wt_24h_dm6_trim_q5_sorted_dupsRemoved_POOLED_rpgcNorm_zNorm.bw',
+             '/Users/m/McKay/FAIRE_dm6/BigWig/wt_44h_dm6_trim_q5_sorted_dupsRemoved_POOLED_rpgcNorm_zNorm.bw')
+             
+
+  
+ranges <- getPeakData(ctbp_Sheet, by = 'grp', narrowPeak_colname = 'peakFile') %>%
+  GRanges() 
+
+ranges <- plyranges::mutate(plyranges::anchor_center(ranges), width = 1000)
+#test <- GRanges('TEST',1)
+
+#ranges <- c(ranges, test)
+
+
+bws <- rtracklayer::BigWigFileList(bw_list)
+bw <- rtracklayer::BigWigFile(bw_path)
+#bw <- rtracklayer::import(bw_path, as = "GRanges")
+
+
+```
+```{r iss_01}
+#working on adding bw list compatability
+ranges$grp
+df <- signal::get_average_signal(bw, ranges, by = 'grp')
+df
+matrix <- signal::get_bw_matrix(bws, ranges, by = 'grp')
+matrix
+
+length(matrix)
+length(ranges.grp[[1]])
+test <- c(1,2,3,4)
+test<-append(test, 5)
+test
+
+ranges.grp <- ranges %>% split(., mcols(.)[,'grp'])
+names(ranges.grp)
+ranges.grp[["aCtBP.pel.150to700"]]
+for(range in names(ranges.grp)){
+ return(range)
+}
+names(ranges.grp)
+list(ranges.grp)
+
+names(unlist(matrix))
+names(matrix[1])
+lapply(matrix, tidyr::unnest)
+matrix <- purrr::flatten(matrix)
+names(matrix)
+bws@listData
+```
+
+playing with making df from matrix output
+```{r avg_signal_df}
+
+
+#' Get a dataframe of average signal from bw within regions
+#'
+#' @param bw 
+#' @param regions 
+#' @param by 
+#'
+#' @return
+#' @export
+#'
+#' @examples
+signal_df <- function(bw, regions, by = NULL) {
+  
+  size = unique(width(regions))
+  
+  if(!is.null(by)){
+    matrix <- signal::get_bw_matrix(bw, regions, by = by)
+
+    df_list <- lapply(names(matrix), function(name){
+      data.frame(matrix[name], check.names = F) %>%
+       setNames(1:size) %>%
+       reshape2::melt(variable.name = "position") %>%
+       dplyr::mutate(id = name,
+                     position = as.double(position)) %>%
+       dplyr::group_by(position, id) %>%
+       dplyr::summarise(mean = mean(value, na.rm = T))  
+    })    
+    
+    signal.df <- dplyr::bind_rows(df_list)
+    
+    return(signal.df) 
+    
+  }else{
+    matrix.df <- signal::get_bw_matrix(bw, regions) %>% data.frame()
+    
+    colnames(matrix.df) <- (-(ncol(matrix.df)-1)/2):((ncol(matrix.df)-1)/2)
+    
+    signal.df <- matrix.df %>% 
+     reshape2::melt(variable.name = "position", value.name = "value") %>%
+     dplyr::mutate(position = as.double(position)) %>%
+     dplyr::group_by(position) %>%
+     dplyr::summarise(value.mean = mean(value, na.rm = T))
+  
+    return(signal.df)
+  }
+}
+
+tst <- signal_df(bw, ranges, by = 'grp') 
+
+tst %>%
+  dplyr::filter(id == "aCtBP.pel.150to700") %>%
+  dplyr::arrange(position)
+  
+
+tst %>% 
+  ggplot(aes(x = position, y = mean, color = id, group = id)) +
+  geom_line(stat = "identity")
+
+matrix <- signal::get_bw_matrix(bw, ranges, by = "grp")
+unique(tst$position)
+tst <- lapply(names(matrix), function(name){
+      data.frame(matrix[name]) %>%
+        setNames(as.character(1:5))
+#        reshape2::melt()
+    })    
+tst[1]
+
+colnames(tst[1])
+tst[1] %>% reshape2::melt(variable.name = colnames)
+```
+
+
+```{r get_matrix}
+keepSeqlevels(bw,"chrX", pruning.mode = "coarse")
+GRanges(bw)
+seqlevels(bw)
+
+matrix <- signal::get_bw_matrix(bw, ranges)
+ranges <- keepSeqlevels(ranges, "chrM", pruning.mode = "coarse")
+
+seqlevels(ranges) <- c("2L",seqlevels(ranges))
+
+newStyle <- mapSeqlevels(seqlevels(bw), "NCBI")
+bw <- renameSeqlevels(bw, newStyle)
+
+seqlevels(ranges)
+lapply(seqlevels(ranges), function(x) seqlevels_valid(x))
+seqlevels_all_within(ranges, bw)
+check_regions_bigwig_seqlevels(ranges, bw)
+```
+
+
+
+```{r}
+
+seqlevels_valid <- function(x) {
+  #out <- try(lapply(seqlevels(x), function(y){seqlevelsStyle(y)}), silent = TRUE)
+  out <- lapply(seqlevels(x), function(y) {
+    check <- try(seqlevelsStyle(y), silent = TRUE)
+    if(class(check) == "try-error"){
+      return(FALSE)
+    } else{
+      return(TRUE)
+    }
+    return(check)
+  })
+  
+  suppressWarnings(if(!all(out)){
+    return(FALSE)
+  }else{
+    return(TRUE)
+  })
+  
+}
+seqlevels(ranges)
+test
+seqlevels_style(ranges, bw)
+
+seqlevels_style <- function(x,y) {
+  x_styles <- lapply(seqlevels(x), function(a) seqlevelsStyle(a))
+  y_styles <- lapply(seqlevels(y), function(a) seqlevelsStyle(a))
+  if(!all(x_styles %in% y_styles)){
+    return(FALSE)
+  }else {
+    return(TRUE)
+  }
+}
+
+#check if seqlevels of x are a subset of seqlevels in y
+seqlevels_all_within <- function(x, y) {
+	if(all(seqlevels(x) %in% seqlevels(y))) {
+		return(TRUE)
+	} else {
+		return(FALSE)
+	}
+}
+
+#return any levels in x that are missing in y 
+seqlevels_missing <- function(x,y) {
+    missing_levels <- seqlevels(x)[!seqlevels(x) %in% seqlevels(y)]  
+    return(missing_levels)
+}
+
+#return any levels of x that are shared in y
+seqlevels_shared <- function(x,y) {
+  if(any(seqlevels(x) %in% seqlevels(y))) {
+    shared_levels <- seqlevels(x)[seqlevels(x) %in% seqlevels(y)]  
+    return(shared_levels)
+  } else {
+    return(FALSE)
+  }
+}
+
+##clunky first draft
+#full style check function to validate seqlevels
+check_regions_bigwig_seqlevels <- function(x,y) {
+  x_name <- deparse(substitute(x))
+  y_name <- deparse(substitute(y))
+  missing_levels <- seqlevels_missing(x,y)
+  shared_levels <- seqlevels_shared(x,y)
+  
+  if(!seqlevels_all_within(x,y)) {
+    if(!seqlevels_style(x,y)) {
+      stop("Mismatched seqlevelStyles detected bewteen [",x_name,"] and [", y_name,"].\n Verify inputs have matching seqlevelsStyles.")
+    }
+    if(!seqlevels_valid(x)){
+      stop(paste0(x_name," uses seqnames that do not have a compatible entry for the species supported by Seqname.\nSee genomeStyles() for supported species/styles."))
+    } 
+    if(!seqlevels_valid(y)){
+      stop(paste0(y_name," uses seqnames that do not have a compatible entry for the species supported by Seqname.\nSee genomeStyles() for supported species/styles."))
+    } 
+    if(!all(seqlevels(x) %in% seqlevels(y))) {
+      stop(paste0("The seqname(s) ",missing_levels," in [",x_name,"] are missing in [", y_name,"]"))
+    }
+  }
+}
+```
+
+
+```{r}
+A <- GRanges(c('2L','2R','chr3','chrX'), c(1:2,4:5,29:30,0:1), seqlengths = c(chrX= 1000, \2L = 10, \2R = 5, chr3 = 888))
+B <- GRanges(c('chr3','chr1','chr2'), c(5:10,1:2,4:5))
+seqinfo(A)
+
+seqlevels(A) <- seqlevels(B)
+
+seqlevelsStyle(A)
+test <- seqnames(A)
+test <- seqlevels(A)
+test
+newStyle <- mapSeqlevels(seqlevels(A), "NCBI")
+newStyle
+A <- renameSeqlevels(A, newStyle)
+
+seqlevels(A) <- c('chrX', seqlevels(A))
+B
+seqlevels(B)
+
+seqlevels(ranges)
+ranges %>% data.frame() %>%
+  write.table(., 'ranges_new.bed', quote = F, row.names = F, col.names = F)
+```
+
+```{r seqlevels_style_test}
+
+regions_levels <- seqlevels(ranges)
+regions_levels
+
+seqlevelsStyle(regions_levels)
+gstyles <- genomeStyles()
+gstyles$Drosophila_melanogaster
+
+seqlevelsStyle(ranges) <- "NCBI"
+seqlevelsStyle(ranges) <- seqlevelsStyle(bw)
+seqlevelsStyle(ranges)
+test_range <- GRanges('ch2',1)
+test_range
+seqlevelsStyle(test_range)
+seqlevelsStyle(bw)
+
+
+
+
+
+
+
+
+
+
+```
+
