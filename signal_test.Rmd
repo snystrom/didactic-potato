@@ -4,20 +4,26 @@ library(ggplot2)
 library(magrittr)
 #library(GenomicRanges)
 library(GenomicRanges)
-source('~/NystLib/R/peakUtils.R')
+source('~/NystLib/Scripts/NystLib/R/peakUtils.R')
 ```
 
 
 ```{r test_data}
-load('~/McKay/CtBP_CnR/ctbp_cnr_analysis/analysis/R_out/ctbp_Sheet.rda')
+load('~/CtBP_CnR/ctbp_cnr_analysis/analysis/R_out/ctbp_Sheet.rda')
 
-bw_path <- '/Users/m/McKay/FAIRE_dm6/BigWig/wt_3LW_dm6_trim_q5_sorted_dupsRemoved_POOLED_rpgcNorm_zNorm.bw'
+#correct the path
+ctbp_Sheet <- data.frame(ctbp_Sheet %>%
+  lapply(function(x) {
+    gsub("m/McKay", "mniederhuber", x)
+  }))
 
-bw_list <- c('/Users/m/McKay/FAIRE_dm6/BigWig/wt_3LW_dm6_trim_q5_sorted_dupsRemoved_POOLED_rpgcNorm_zNorm.bw',
-             '/Users/m/McKay/FAIRE_dm6/BigWig/wt_24h_dm6_trim_q5_sorted_dupsRemoved_POOLED_rpgcNorm_zNorm.bw',
-             '/Users/m/McKay/FAIRE_dm6/BigWig/wt_44h_dm6_trim_q5_sorted_dupsRemoved_POOLED_rpgcNorm_zNorm.bw')
-             
+ctbp_Sheet
 
+bw_path <- '/Users/mniederhuber/FAIRE_dm6/BigWig/wt_3LW_dm6_trim_q5_sorted_dupsRemoved_POOLED_rpgcNorm_zNorm.bw'
+
+bw_list <- c('/Users/mniederhuber/FAIRE_dm6/BigWig/wt_3LW_dm6_trim_q5_sorted_dupsRemoved_POOLED_rpgcNorm_zNorm.bw',
+             '/Users/mniederhuber/FAIRE_dm6/BigWig/wt_24h_dm6_trim_q5_sorted_dupsRemoved_POOLED_rpgcNorm_zNorm.bw',
+             '/Users/mniederhuber/FAIRE_dm6/BigWig/wt_44h_dm6_trim_q5_sorted_dupsRemoved_POOLED_rpgcNorm_zNorm.bw')
   
 ranges <- getPeakData(ctbp_Sheet, by = 'grp', narrowPeak_colname = 'peakFile') %>%
   GRanges() 
@@ -40,7 +46,10 @@ ranges$grp
 df <- signal::get_average_signal(bw, ranges, by = 'grp')
 df
 matrix <- signal::get_bw_matrix(bws, ranges, by = 'grp')
-matrix
+
+type((matrix[1][[1]]))
+data.frame(matrix)
+
 
 length(matrix)
 length(ranges.grp[[1]])
