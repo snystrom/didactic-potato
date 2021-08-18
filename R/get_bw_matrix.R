@@ -49,7 +49,7 @@ get_bw_matrix.BigWigFileList <- function(bw, regions,
       #generate a list of matrices for all bw in the bw_list for this specific region
       #setting by = NULL here because already breaking out by grouping before sending to get_bw_matrix(), too clunky?
       matrix_list <- lapply(bw, get_bw_matrix, regions.by[[x]], type, by = NULL) 
-      lapply(matrix_list, array, dim = c(regions.dim, positions.dim, tracks.dim, dimnames = c('regions', 'positions', 'bw')))
+      lapply(matrix_list, array, dim = c(regions.dim, positions.dim, tracks.dim, dimnames = list('regions', 'positions', 'bw')))
       })   
 #    for(region in names(regions.by)){
 #      #get number of regions -- regions.dim
