@@ -9,12 +9,14 @@
 #'
 #' @examples
 get_average_signal <- function(bw, regions, by = NULL) {
-  
+ 
+  #determine the regions size  
   size = unique(width(regions))
-  
+ 
   if(!is.null(by)){
+    #build matrix 
     matrix <- get_bw_matrix(bw, regions, by = by)
-    
+    #get names of each matrix and make a new df, melt the data, group, and calculate average
     df_list <- lapply(names(matrix), function(name){
       data.frame(matrix[name], check.names = F) %>%
         setNames(1:size) %>%

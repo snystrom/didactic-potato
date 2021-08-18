@@ -29,7 +29,18 @@ get_bw_matrix.character <- function(bw, regions,
 get_bw_matrix.BigWigFileList <- function(bw, regions,
                           type = c("mean", "min", "max", "coverage", "sd"),
                           by = NULL){
-  lapply(bw, get_bw_matrix, regions, type)
+  if(!is.null(by)){
+    #split regions by grouping metaCol
+    regions.grp <- regions %>% split(., mcols(.)[,by])
+    #Gotta be a better solution than for loop...
+      #loop the split regions and pass each to get_bw_matrix() one bw at a time
+      #Trying to get a list of matrices for each by condition where each matrix is a diff bw, 
+      #could than convert list to 3D array of dims (region x position x bw)
+    for(region in regions.grp){
+      lapply(bw, get_bw_matrix, region, type, by)
+    }
+  }
+  lapply(bw, get_bw_matrix, regions, type, by)
   # TODO: consider 3d matrix output:
   # simplify2array()
   # TODO: consider setting dimnames:
