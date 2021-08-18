@@ -31,16 +31,32 @@ get_bw_matrix.BigWigFileList <- function(bw, regions,
                           by = NULL){
   if(!is.null(by)){
     #split regions by grouping metaCol
-    regions.grp <- regions %>% split(., mcols(.)[,by])
+    array_list <- list()
+    regions.by <- regions %>% split(., mcols(.)[,by])
+    
+     
     #Gotta be a better solution than for loop...
       #loop the split regions and pass each to get_bw_matrix() one bw at a time
       #Trying to get a list of matrices for each by condition where each matrix is a diff bw, 
       #could than convert list to 3D array of dims (region x position x bw)
-    for(region in regions.grp){
-      lapply(bw, get_bw_matrix, region, type, by)
+    
+    for(region in names(regions.by)){
+      #get number of regions -- regions.dim
+      #width of regions -- positions.dim
+      #number of tracks -- tracks.dim
+      regions.dim <- length(regions.by[[region]])
+      #positions.dim should be the same between tracks and regions -- add test?
+      positions.dim <- unique(width(regions.by[[region]]))
+      tracks.dim <- length(bw) 
+        #attempting to build a list of 3D arrays, where each array is specific to a region grouping eg. WT vs Mut ChIP profiles 
+      array_list <- append(array_list, array(lapply(bw, get_bw_matrix, regions.by[[region]], type, by = NULL), 
+                                             dim = c(regions.dim,positions.dim,tracks.dim)))
+    return(array_list)
     }
+  }else{
+    lapply(bw, get_bw_matrix, regions, type, by)
   }
-  lapply(bw, get_bw_matrix, regions, type, by)
+  
   # TODO: consider 3d matrix output:
   # simplify2array()
   # TODO: consider setting dimnames:
@@ -91,8 +107,8 @@ get_bw_matrix.BigWigFile <- function(bw, regions,
   # suppress warnings because of out of bounds?
   # Nah, probably just let it bubble up
   if(!is.null(by)){
-    regions.grp <- regions %>% split(., mcols(.)[,by])
-    matrix <- lapply(regions.grp, function(x){
+    regions.by <- regions %>% split(., mcols(.)[,by])
+    matrix <- lapply(regions.by, function(x){
       rtracklayer::summary(bw, which = x, as = "matrix",
                            type = type, size = size)
     })
