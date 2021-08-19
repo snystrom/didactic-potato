@@ -12,8 +12,9 @@ get_average_signal <- function(bw, regions, by = NULL) {
  
   #determine the regions size  
   size = unique(width(regions))
- 
-  if(!is.null(by)){
+  
+  
+  if(!is.null(by)){ #this is a redundant step -- drop the if statement 
     #build matrix 
     matrix <- get_bw_matrix(bw, regions, by = by)
     #get names of each matrix and make a new df, melt the data, group, and calculate average

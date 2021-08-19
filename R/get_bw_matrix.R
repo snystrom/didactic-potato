@@ -30,42 +30,16 @@ get_bw_matrix.BigWigFileList <- function(bw, regions,
                           type = c("mean", "min", "max", "coverage", "sd"),
                           by = NULL){
   if(!is.null(by)){
-    #split regions by grouping metaCol
+     #split regions by grouping metaCol
     regions.by <- regions %>% split(., mcols(.)[,by])
-    
-    #Gotta be a better solution than for loop...
-      #loop the split regions and pass each to get_bw_matrix() one bw at a time
-      #Trying to get a list of matrices for each by condition where each matrix is a diff bw, 
-      #could than convert list to 3D array of dims (region x position x bw)
+     #outs a list of 3d arrays of dimension (regions, position, track)
     lapply(names(regions.by), function(x) {
-      #get number of regions -- regions.dim
-      #width of regions -- positions.dim
-      #number of tracks -- tracks.dim
-      regions.dim <- length(regions.by[[x]])
-      #positions.dim should be the same between tracks and regions -- add test?
-      positions.dim <- unique(width(regions.by[[x]]))
-      tracks.dim <- length(bw) 
-     
-      #generate a list of matrices for all bw in the bw_list for this specific region
+      #generate a 3d array for all bw in the bw_list for this specific region
       #setting by = NULL here because already breaking out by grouping before sending to get_bw_matrix(), too clunky?
-      matrix_list <- lapply(bw, get_bw_matrix, regions.by[[x]], type, by = NULL) 
-      lapply(matrix_list, array, dim = c(regions.dim, positions.dim, tracks.dim, dimnames = list('regions', 'positions', 'bw')))
+      sapply(bw, get_bw_matrix, regions.by[[x]], type, by = NULL, simplify = "array") 
       })   
-#    for(region in names(regions.by)){
-#      #get number of regions -- regions.dim
-#      #width of regions -- positions.dim
-#      #number of tracks -- tracks.dim
-#      regions.dim <- length(regions.by[[region]])
-#      #positions.dim should be the same between tracks and regions -- add test?
-#      positions.dim <- unique(width(regions.by[[region]]))
-#      tracks.dim <- length(bw) 
-#     
-#      #generate a list of matrices for all bw in the bw_list for this specific region
-#      matrix_list <- lapply(bw, get_bw_matrix, regions.by[[region]], type, by = NULL) 
-#      lapply(matrix_list, array, dim = c(regions.dim, positions.dim, tracks.dim))
-#      }
   }else{
-    lapply(bw, get_bw_matrix, regions, type, by)
+    sapply(bw, get_bw_matrix, regions, type, by, simplify = "array")
   }
   
   # TODO: consider 3d matrix output:
