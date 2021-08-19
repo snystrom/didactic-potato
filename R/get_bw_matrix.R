@@ -36,8 +36,12 @@ get_bw_matrix.BigWigFileList <- function(bw, regions,
     lapply(names(regions.by), function(x) {
       #generate a 3d array for all bw in the bw_list for this specific region
       #setting by = NULL here because already breaking out by grouping before sending to get_bw_matrix(), too clunky?
-      sapply(bw, get_bw_matrix, regions.by[[x]], type, by = NULL, simplify = "array") 
-      })   
+     
+      #trying to pull out name data from bw list... 
+      sapply(bw, function(y) {
+        get_bw_matrix(y@resource, regions.by[[x]], type, by = NULL) 
+      }, simplify = "array", USE.NAMES = TRUE)
+    })   
   }else{
     sapply(bw, get_bw_matrix, regions, type, by, simplify = "array")
   }
