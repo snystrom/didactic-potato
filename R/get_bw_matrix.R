@@ -84,13 +84,14 @@ get_bw_matrix.BigWigFile <- function(bw, regions,
     matrix <- lapply(regions.grp, function(x){
       rtracklayer::summary(bw, which = x, as = "matrix",
                            type = type, size = size)
-    })
+    }) %>%
+      setNames(names(regions.grp))
+
   }else{
     matrix <- rtracklayer::summary(bw, which = regions, as = "matrix",
                                   type = type, size = size)   
   }
  
-
   matrix
 }
 
