@@ -7,14 +7,7 @@
 get_average_signal(bw, regions, by = NULL)
 }
 \arguments{
-\item{bw}{}
-
-\item{regions}{}
-
 \item{by}{}
-}
-\value{
-
 }
 \description{
 Get a dataframe of average signal from bw within regions

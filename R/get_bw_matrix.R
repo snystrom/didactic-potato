@@ -10,25 +10,26 @@
 #' @examples
 get_bw_matrix <- function(bw, regions,
                           type = c("mean", "min", "max", "coverage", "sd"),
-                          by = NULL){
+                          by = NULL) {
   UseMethod("get_bw_matrix")
 }
 
 #' @noRd
 #' @export
 get_bw_matrix.character <- function(bw, regions,
-                          type = c("mean", "min", "max", "coverage", "sd"),
-                          by = NULL){
-  get_bw_matrix.BigWigFile(rtracklayer::BigWigFile(bw),
-                           regions, type)
-
+                                    type = c("mean", "min", "max", "coverage", "sd"),
+                                    by = NULL) {
+  get_bw_matrix.BigWigFile(
+    rtracklayer::BigWigFile(bw),
+    regions, type
+  )
 }
 
 #' @noRd
 #' @export
 get_bw_matrix.BigWigFileList <- function(bw, regions,
-                          type = c("mean", "min", "max", "coverage", "sd"),
-                          by = NULL){
+                                         type = c("mean", "min", "max", "coverage", "sd"),
+                                         by = NULL) {
   lapply(bw, get_bw_matrix, regions, type)
   # TODO: consider 3d matrix output:
   # simplify2array()
@@ -43,57 +44,59 @@ get_bw_matrix.BigWigFileList <- function(bw, regions,
 #' @importFrom GenomeInfoDb seqlevels seqlevels<-
 #' @importFrom rtracklayer summary
 get_bw_matrix.BigWigFile <- function(bw, regions,
-                          type = c("mean", "min", "max", "coverage", "sd"),
-                          by = NULL){
-  
+                                     type = c("mean", "min", "max", "coverage", "sd"),
+                                     by = NULL) {
   type <- match.arg(type, choices = c("mean", "min", "max", "coverage", "sd"))
-                           
+
   # TODO: expect input is a BigWigFile,
   # need to coerce path to this before passing
-  #bw <- rtracklayer::BigWigFile(path)
+  # bw <- rtracklayer::BigWigFile(path)
 
   size <- unique(width(regions))
   if (length(size) != 1) {
     stop("All regions must be equal width", call. = FALSE)
   }
 
-  ##TO DO -- fully test with different invalid conditions
-  check_regions_bigwig_seqlevels(regions,bw) 
-  
+  ## TO DO -- fully test with different invalid conditions
+  check_regions_bigwig_seqlevels(regions, bw)
 
-## FOR REVIEW TO DROP ##
+
+  ## FOR REVIEW TO DROP ##
   # not 100% sure how the seqlevels thing works, need to do some reality
   # checking that no errors introduced here: WRITE TESTS!! (but for what?)
-#  regions_seqs <- seqnames(seqinfo(regions))
-#  bw_seqs <- seqnames(seqinfo(bw))
+  #  regions_seqs <- seqnames(seqinfo(regions))
+  #  bw_seqs <- seqnames(seqinfo(bw))
 
-#  if (!all(regions_seqs %in% bw_seqs)) {
-#    bad_seqnames <- regions_seqs[!(regions_seqs %in% bw_seqs)]
-#    stop(paste0("Some input regions do not match chromosomes found in the bigwig file.\nThe following seqnames are not found: ",
-#                bad_seqnames), call. = FALSE)
-#  }
+  #  nolint start
+  #  if (!all(regions_seqs %in% bw_seqs)) {
+  #    bad_seqnames <- regions_seqs[!(regions_seqs %in% bw_seqs)]
+  #    stop(paste0("Some input regions do not match chromosomes found in the bigwig file. ",
+  # "The following seqnames are not found: ",
+  #                bad_seqnames), call. = FALSE)
+  #  }
+  #  nolint end
 
-  #match seqlevels between inputs 
+  # match seqlevels between inputs
   seqlevels(regions) <- seqlevels(bw)
   seqinfo(regions) <- seqinfo(bw)
 
   # suppress warnings because of out of bounds?
   # Nah, probably just let it bubble up
-  if(!is.null(by)){
-    regions.grp <- regions %>% split(., mcols(.)[,by])
-    matrix <- lapply(regions.grp, function(x){
-      rtracklayer::summary(bw, which = x, as = "matrix",
-                           type = type, size = size)
+  if (!is.null(by)) {
+    regions.grp <- regions %>% split(., mcols(.)[, by])
+    matrix <- lapply(regions.grp, function(x) {
+      rtracklayer::summary(bw,
+        which = x, as = "matrix",
+        type = type, size = size
+      )
     }) %>%
       setNames(names(regions.grp))
-
-  }else{
-    matrix <- rtracklayer::summary(bw, which = regions, as = "matrix",
-                                  type = type, size = size)   
+  } else {
+    matrix <- rtracklayer::summary(bw,
+      which = regions, as = "matrix",
+      type = type, size = size
+    )
   }
- 
+
   matrix
 }
-
-
-
