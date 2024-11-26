@@ -1,0 +1,10 @@
+linters: linters_with_defaults(
+    line_length_linter = line_length_linter(100),
+    object_usage_linter = NULL,
+    object_name_linter = NULL,
+    seq_linter = NULL,
+    object_length_linter = object_length_linter(50),
+    cyclocomp_linter = NULL,
+    todo_comment_linter = todo_comment_linter(todo=c("todo", "fixme"))
+  )
+exclusions: c("inst")
