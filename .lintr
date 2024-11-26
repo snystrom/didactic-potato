@@ -5,6 +5,9 @@ linters: linters_with_defaults(
     seq_linter = NULL,
     object_length_linter = object_length_linter(50),
     cyclocomp_linter = NULL,
-    todo_comment_linter = todo_comment_linter(todo=c("todo", "fixme"))
+    # reenable this once things are more fleshed out...
+    #todo_comment_linter = todo_comment_linter(todo=c("todo", "fixme")),
+    # reenable this once things are better...
+    commented_code_linter = NULL
   )
 exclusions: c("inst")
